@@ -28,3 +28,4 @@ This is a simple Android application that demonstrates how to use Google's ML Ki
 
 - To test with a real image, you can **drag and drop** an image file from your computer directly onto the emulator window. It will be saved to the emulator's gallery.
 - Once the image is in the gallery, use the **"Select from Gallery"** button in the app to choose it and run the OCR process.
+- However, you can use the camera itself. It's a bit complicated with virtual enviroment and 'walking' inside of yet it is possible. Camera must be put to 'Emulated' in setting of an emulator and the image should be put in 'Camera' extended controls
