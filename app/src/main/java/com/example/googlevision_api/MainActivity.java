@@ -6,10 +6,10 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.method.ScrollingMovementMethod;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
         db = OCRDatabase.getDatabase(this);
         resultTextView = findViewById(R.id.tv_result);
+        resultTextView.setMovementMethod(new ScrollingMovementMethod());
 
         if (savedInstanceState != null) {
             resultTextView.setText(savedInstanceState.getString(KEY_OCR_RESULT));
@@ -86,20 +87,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void launchCamera() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                Toast.makeText(this, "Error occurred while creating the file", Toast.LENGTH_SHORT).show();
-            }
-            if (photoFile != null) {
-                photoURI = FileProvider.getUriForFile(this,
-                        "com.example.googlevision_api.fileprovider",
-                        photoFile);
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(takePictureIntent, IMAGE_CAPTURE_REQUEST_CODE);
-            }
+        File photoFile = null;
+        try {
+            photoFile = createImageFile();
+        } catch (IOException ex) {
+            Toast.makeText(this, "Error occurred while creating the file", Toast.LENGTH_SHORT).show();
+        }
+        if (photoFile != null) {
+            photoURI = FileProvider.getUriForFile(this,
+                    "com.example.googlevision_api.fileprovider",
+                    photoFile);
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+            startActivityForResult(takePictureIntent, IMAGE_CAPTURE_REQUEST_CODE);
         }
     }
 
@@ -134,16 +133,14 @@ public class MainActivity extends AppCompatActivity {
             try {
                 if (requestCode == IMAGE_CAPTURE_REQUEST_CODE) {
                     if (photoURI != null) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                            bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(getContentResolver(), photoURI));
-                        } else {
-                            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), photoURI);
-                        }
+                        ImageDecoder.Source source = ImageDecoder.createSource(getContentResolver(), photoURI);
+                        bitmap = ImageDecoder.decodeBitmap(source);
                     }
                 } else if (requestCode == GALLERY_REQUEST_CODE) {
                     if (data != null && data.getData() != null) {
                         Uri imageUri = data.getData();
-                        bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                        ImageDecoder.Source source = ImageDecoder.createSource(getContentResolver(), imageUri);
+                        bitmap = ImageDecoder.decodeBitmap(source);
                     }
                 }
                 if (bitmap != null) {
